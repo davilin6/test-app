@@ -89,4 +89,52 @@ Each answer is evaluated as soon as it is submitted. The final screen shows the 
 | --- | --- |
 | `npm start` | Runs the interactive CLI through `node index.js`. |
 | `npm test` | Runs Node.js's built-in test runner (`node --test`). No test files are currently included. |
-|
+
+## Question Content
+
+Questions are stored in `data/questions.json`. The supplied dataset has three category IDs:
+
+| ID | Display name | Included questions |
+| --- | --- | ---: |
+| `javascript` | JavaScript Basics | 5 |
+| `nodejs` | Node.js Fundamentals | 5 |
+| `general` | General Programming | 5 |
+
+Every question follows this structure:
+
+```json
+{
+  "question": "Question text",
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+  "answer": 0,
+  "explanation": "Explanation shown after the answer"
+}
+```
+
+`answer` is a zero-based index into `options`. Keep it aligned with the intended correct option when adding or editing questions. The CLI derives category choices directly from `categories`, so new categories in this file become selectable without changes to the application code.
+
+## Architecture and Runtime Flow
+
+1. `index.js` resolves its own directory from `import.meta.url`, reads `data/questions.json` with `node:fs/promises`, and creates a `readline` interface.
+2. The player selects a category and a supported question count. Question limits are based on the chosen category’s available questions.
+3. `Quiz` receives the selected questions, copies and randomizes them with the Fisher–Yates algorithm, then manages progress, score, and answer history.
+4. `src/input.js` wraps `readline` callbacks in Promises for `async`/`await`-based prompts and validates menu selections.
+5. `Quiz.askQuestion()` renders a progress bar, collects an answer, records the result, and displays the applicable explanation.
+6. `Quiz.showResults()` calculates the final percentage, selects a performance message, and lists all incorrect answers for review.
+7. The application asks whether to begin a new quiz and always closes the readline interface in `finally`; unexpected failures print an error and stack trace before exiting with status code `1`.
+
+## File Structure
+
+```text
+.
+└── test-app/
+    ├── README.md              # Project documentation
+    ├── index.js               # CLI entry point and application loop
+    ├── package.json           # Package metadata, Node version, and npm scripts
+    ├── data/
+    │   └── questions.json     # Categories and multiple-choice question data
+    └── src/
+        ├── colors.js          # ANSI styling helpers
+        ├── input.js           # Promise-based terminal input utilities
+        └── quiz.js            # Quiz state, question flow, scoring, and results
+```
