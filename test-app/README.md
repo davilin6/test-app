@@ -138,3 +138,34 @@ Every question follows this structure:
         ├── input.js           # Promise-based terminal input utilities
         └── quiz.js            # Quiz state, question flow, scoring, and results
 ```
+
+## Implementation Details
+
+### Modules
+
+The project uses ECMAScript modules (`"type": "module"` in `package.json`) and Node.js built-ins only:
+
+- `node:fs/promises` reads the question file asynchronously.
+- `node:path` and `node:url` construct a data-file path that works from the entry module location.
+- `node:readline` provides the interactive terminal interface.
+
+`src/colors.js` applies ANSI foreground/background and text styles through a reusable `colorize()` helper. It also exports semantic helpers such as `success`, `error`, `warning`, `info`, and `highlight`.
+
+### Quiz Behavior
+
+- Questions are shuffled, but answer choices remain in the order defined in JSON.
+- The requested subset is taken before shuffling; the provided data permits all three offered lengths.
+- Invalid numeric selections keep the same menu open until the player enters a valid option number.
+- A confirmation response is treated as affirmative when its lowercased form starts with `y`.
+- The results review locates the original question by its question text, so question text should remain unique within a quiz dataset.
+
+## Development Notes
+
+- No linting, formatting, test fixtures, CI configuration, or external package dependencies are present in the repository.
+- The existing `npm test` script is ready for future tests that use Node’s built-in test runner.
+- To extend the app, add well-formed question objects or categories to `data/questions.json`; no registration code is necessary.
+- The quiz is designed for a terminal session rather than command-line flags, non-interactive input, or persistent score storage.
+
+## License
+
+This project is marked as **MIT** in `package.json`.
